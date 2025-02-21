@@ -94,12 +94,28 @@ def create_products():
 
 
 ######################################################################
-# L I S T   A L L   P R O D U C T S
+# L I S T  P R O D U C T S
 ######################################################################
 
-#
-# PLACE YOUR CODE TO LIST ALL PRODUCTS HERE
-#
+@app.route("/products", methods=["GET"])
+def list_products():
+    """Returns a list of Products"""
+    app.logger.info("Request to list Products...")
+
+    products = []
+    name = request.args.get("name")
+
+    if name:
+        app.logger.info("Find by name %s", name)
+        products = Product.find_by_name(name)
+    else:
+        app.logger.info("Find all products")
+        products = Product.all()
+        
+    product_list = [product.serialize() for product in products]
+    app.logger.info("[%s] Products returned", len(product_list))
+    return product_list, status.HTTP_200_OK
+
 
 ######################################################################
 # R E A D   A   P R O D U C T
