@@ -31,7 +31,7 @@ from unittest import TestCase
 from urllib.parse import quote_plus
 from service import app
 from service.common import status
-from service.models import db, init_db, Product
+from service.models import db, init_db, Product, Category
 from tests.factories import ProductFactory
 
 # Disable all but critical errors during normal test run
@@ -219,6 +219,44 @@ class TestProductRoutes(TestCase):
         # check the data just to be sure
         for product in data:
             self.assertEqual(product["name"], test_name)
+
+    def test_query_by_category(self):
+        """It should Query Products by Category"""
+        products = self._create_products(10)
+        category = products[0].category
+        found = [product for product in products if product.category == category]
+        found_count = len(found)
+        logging.debug("Found Products [%d] %s", found_count, found)
+
+        # test for category
+        response = self.client.get(BASE_URL, query_string=f"category={category.name}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), found_count)
+        # check the data just to be sure
+        for product in data:
+            self.assertEqual(product["category"], category.name)
+
+    def test_query_by_availability(self):
+        """It should Query Products by availability"""
+        products = self._create_products(10)
+        available_products = products[0].available
+        found = [product for product in products if product.available == available_products]
+        found_count = len(found)
+        logging.debug("Found Products [%d] %s", found_count, found)
+
+        # test for available
+        response = self.client.get(BASE_URL, query_string=f"available={available_products}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), found_count)
+        
+        # check the data just to be sure
+        for product in data:
+            self.assertEqual(product["available"], available_products)
+
+
+
 
     ######################################################################
     # Utility functions
